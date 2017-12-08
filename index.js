@@ -21,7 +21,7 @@ const fullPage = async ( last=null, page=0 ) => {
   const start = new Date(now.getUTCFullYear(), now.getMonth(), now.getDate()-1)
   const props = {
     from: start.getTime(),
-    to: now.getTime()
+    //to: now.getTime()
   }
   if (last) props.lastId = last;
   try{
@@ -45,14 +45,27 @@ const fullPage = async ( last=null, page=0 ) => {
 const main = async () => {
   try{
     const jobNum = await prompt('Job number please: ');
+
+    if (!/^\d{8}(?:\d{2})?$/.test(jobNum)){
+      console.log('thats not a job number! (exactly 8 digits please)'.rainbow)
+      return main();
+    }
     const jobReg = new RegExp(`.*${jobNum}.*`);
-    var result;
+
+    const result = jobArray.filter((job) => {
+      return jobReg.test(job.notes)
+    }).splice(-1)[0];
+
+    var worker;
+    const response = result ? (
+      result.state != 0 ? (
+        worker = await onfleet.workers.retrieve(result.worker),
+        worker.name
+      ) : 'job unassigned and unsorted'
+    ) : 'typo or delivered';
+
+/*
     var response;
-    jobArray.forEach((job) => {
-      if(jobReg.test(job.notes)){
-        result = job
-      }
-    })
     if (result){
       if (result.state != 0){
         const worker = await onfleet.workers.retrieve(result.worker)
@@ -63,6 +76,8 @@ const main = async () => {
     } else {
       response = 'typo or delivered or not for today'
     }
+*/
+
     console.log(`\n| >> ${response} << |\n`.bold)
     await prompt('Press any key to continue')
   } catch (err){
