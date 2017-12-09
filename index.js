@@ -13,6 +13,11 @@ const jobArray = [];
 var lastPaginated = "(no tasks loaded)";
 var lastTask;
 
+const errored = (err) => {
+  rl.close()
+  console.log(err)
+}
+
 const fullPage = async ( last=null, page=0 ) => {
   readline.cursorTo(process.stdout, 0);
   process.stdout.write(`waiting...(page ${page.toString().red.bold})`);
@@ -21,7 +26,6 @@ const fullPage = async ( last=null, page=0 ) => {
   const start = new Date(now.getUTCFullYear(), now.getMonth(), now.getDate()-1)
   const props = {
     from: start.getTime(),
-    //to: now.getTime()
   }
   if (last) props.lastId = last;
   try{
@@ -37,8 +41,7 @@ const fullPage = async ( last=null, page=0 ) => {
       return jobArray;
     }
   } catch (err){
-    rl.close();
-    console.log(err)
+    errored(err);
   }
 }
 
@@ -64,25 +67,10 @@ const main = async () => {
       ) : 'job unassigned and unsorted'
     ) : 'typo or delivered';
 
-/*
-    var response;
-    if (result){
-      if (result.state != 0){
-        const worker = await onfleet.workers.retrieve(result.worker)
-        response = worker.name
-      } else {
-        response = 'job unassigned and unsorted'
-      }
-    } else {
-      response = 'typo or delivered or not for today'
-    }
-*/
-
     console.log(`\n| >> ${response} << |\n`.bold)
     await prompt('Press any key to continue')
   } catch (err){
-    rl.close();
-    console.log(err)
+    errored(err);
   }
 }
 
@@ -108,8 +96,7 @@ const menu = async () => {
         menu();
     }
   } catch (err){
-    rl.close();
-    console.log(err)
+    errored(err);
   }
 };
 
